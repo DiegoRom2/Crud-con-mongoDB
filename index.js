@@ -54,7 +54,7 @@ app.delete("/api/v1/pizzas/:id", async (req, res) => {
     await eliminarPizzaAsync(id)
 
     const mensaje = {mensaje: "Datos eliminados"}
-    return res.status(202).json(mensaje)
+    return res.status(200).json(mensaje)
 });
 
 // Iniciar el servidor

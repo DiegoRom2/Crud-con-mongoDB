@@ -1,28 +1,26 @@
-//Esta es la capa donde persisten los datos
+import { MongoClient, ObjectId } from 'mongodb'
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const client = new MongoClient('mongodb://root:12345678@localhost:27017/')
+const pizzasDb = () => client.db('pizzeria').collection('pizzas')
 
-let pizzas = [{ id: 1, nombre:  "Hawaiiana", descripcion: "Jamon y piña"}];
+const sleep = (ms) => new Promise(r => setTimeout(r, ms))
+
 /**
  * Regresa una lista de las pizzas
  * @returns []
  */
-
 export async function obtenerTodasLasPizzasAsync(){
-     await sleep(2000) // Simula un retraso de 2 segundo
-
-     return pizzas
+    const pizzas = await pizzasDb().find().toArray()
+    return pizzas
 }
+
 /**
  * Regresa una pizza por su ID buscado o undefined si no lo encuentra
  * @param {*} id 
  */
 export async function obtenerPizzaPorIdAsync(id){
-    await sleep(1000) // Simula un retraso de 2 segundos
-
-    const pizza = pizzas.find(x => x.id == id)
-
-    return pizza
+    const pizza = await pizzasDb().findOne({ _id: new ObjectId(id) })
+    return pizza ?? undefined
 }
 
 /**
@@ -32,22 +30,14 @@ export async function obtenerPizzaPorIdAsync(id){
  */
 export async function agregarPizzaAsync(pizza){
     await sleep(1000)
-    pizzas.push(pizza)
-
-    return pizzas.length
+    const { insertedId: id } = await pizzasDb().insertOne(pizza)
+    return id
 }
 
 export async function actualizarPizzaAsync(id, pizza){
-    const index = pizzas.findIndex(x => x.id == id)
-    if(index == -1)
-        return undefined
-    pizzas[index].nombre = pizza.nombre
-    pizzas[index].descripcion = pizza.descripcion
-    
-    return pizzas[index]
+    await pizzasDb().updateOne({ _id: new ObjectId(id) }, { $set: pizza })
 }
 
 export async function eliminarPizzaAsync(id){
-    const index = pizzas.findIndex(x => x.id == id)
-    pizzas.splice(index)
+    await pizzasDb().deleteOne({ _id: new ObjectId(id) })
 }
